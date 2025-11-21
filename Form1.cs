@@ -24,8 +24,13 @@ namespace Karesz
 				// IDE ÍRD AZ UTASÍTÁSOKAT!
 
 				Lépj();
-
-
+				Fordulj(jobbra);
+				Lépj();
+				Lépj();
+				Fordulj(balra);
+				Lépj();
+				Fordulj(balra);
+				Fordulj(balra);
 
 			};
 		}

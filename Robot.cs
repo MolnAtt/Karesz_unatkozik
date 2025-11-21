@@ -61,20 +61,55 @@ namespace Karesz
 			Vektor v;
 			int[] kődb;
 			Action feladat;
+
+			// cooperative scheduling
+			Thread szál;
+
+			// Analógia: Minden autónak van egy jelzőlámpája és egy dudája
+			// Ha a jelzőlámpája zöldre vált, elindul be a kereszteződésbe
+			// Ha a kereszteződésen átért, megfújja a dudáját, jelezve, hogy végeztem
+			AutoResetEvent jelzőlámpa;
+			AutoResetEvent duda;
+			volatile bool végzett;
+
+			public bool Végzett => végzett;
+
+
 			public Action Feladat
 			{
 				get => feladat;
 				set
 				{
 					feladat = value;
-					thread = new Thread(new ThreadStart(feladat));
+					szál = new Thread(ThreadMain);
 				}
 			}
-			Thread thread;
 
-			public bool Kész { get => thread.ThreadState == ThreadState.Stopped; }
-			public bool Vár { get => thread.ThreadState == ThreadState.Suspended; }
-			public bool Elindult { get => thread.ThreadState != ThreadState.Unstarted; }
+			void ThreadMain()
+			{
+				jelzőlámpa.WaitOne();
+
+				try
+				{
+					feladat?.Invoke();
+				}
+				finally // mert ha a diák kódja rossz, akkor ne akadjon el a scheduler
+				{
+					végzett = true;
+					duda.Set();
+				}
+			}
+
+			void Indítása_ha_áll()
+			{
+				if (szál.ThreadState == ThreadState.Unstarted)
+					szál.Start();
+			}
+
+
+			public bool Kész { get => szál.ThreadState == ThreadState.Stopped; }
+			public bool Vár { get => szál.ThreadState == ThreadState.Suspended; }
+			public bool Elindult { get => szál.ThreadState != ThreadState.Unstarted; }
 
 			#endregion
 			public override string ToString() => $"{this.Név} ({this.H})";
@@ -98,6 +133,10 @@ namespace Karesz
 				this.képkészlet = képkészlet;
 				this.kődb = kődb;
 				this.helyigény = h;
+				// scheduler
+				this.jelzőlámpa = new AutoResetEvent(false);
+				this.duda = new AutoResetEvent(false);
+				this.végzett = false;
 
 				if (0 == Robot.lista.Count)
 					Robot.megfigyeltindex = new ModuloSzam(0,1);
@@ -136,25 +175,47 @@ namespace Karesz
             static void ok_elindítása()
 			{
 				foreach (Robot robot in Robot.lista)
-					if (!robot.Kész)
-						robot.Start_or_Resume();
+					robot.Indítása_ha_áll();
 			}
 			public static void Játék()
 			{
+
 				Robot.ok_elindítása();
-				Thread.Sleep(várakozási_idő);
-				while (Robot.lista.Exists(r => !r.Kész))
+
+				// első kör: az első robot kapjon engedélyt
+				// (vagy mindenki, ha körönként haladunk – itt az egyszerűbb verzió)
+				while (lista.Exists(r => !r.Végzett))
 				{
-					if (Robot.lista.TrueForAll(r => r.Kész || r.Vár))
+					foreach (Robot robot in lista)
 					{
-						Robot.ok_léptetése();
-						Robot.form.Frissít();
-						Robot.ok_elindítása();
+						if (!robot.Végzett)
+						{
+							robot.jelzőlámpa.Set();
+							robot.duda.WaitOne();
+						}
 					}
+
+					Robot.ok_léptetése();
+					Robot.form.Frissít();
+
 					Thread.Sleep(várakozási_idő);
 				}
-				Robot.form.Frissít();
+
 				SendKeys.Send("%"); // valamilyen misztikus okból kifolyólag nem frissít rendesen az ablak a végén, csak ha valaki az ALT gombot lenyomja...
+
+				//Thread.Sleep(várakozási_idő);
+				//while (Robot.lista.Exists(r => !r.Kész))
+				//{
+				//	if (Robot.lista.TrueForAll(r => r.Kész || r.Vár))
+				//	{
+				//		Robot.ok_léptetése();
+				//		Robot.form.Frissít();
+				//		Robot.ok_elindítása();
+				//	}
+				//	Thread.Sleep(várakozási_idő);
+				//}
+				//Robot.form.Frissít();
+				//SendKeys.Send("%"); // valamilyen misztikus okból kifolyólag nem frissít rendesen az ablak a végén, csak ha valaki az ALT gombot lenyomja...
 			}
 			static void ok_léptetése()
 			{
@@ -180,20 +241,28 @@ namespace Karesz
 				Robot.Ellövendő_lövedékek.Clear();
             }
 
-            static void holtak_eltávolítása()
+			public void MarkAsFinished()
+			{
+				végzett = true;
+
+				// jelezhetünk is, ha épp egy turn-ben halt meg
+				duda.Set();
+			}
+
+			static void holtak_eltávolítása()
 			{
 				foreach (Robot robot in Robot.halállista)
 				{
 					robot.Sírkő_letétele();
 					if (robot.Indexe() < megfigyeltindex.ToInt())
 						--megfigyeltindex;
+
+					robot.MarkAsFinished();   // _finished = true;
+
 					Robot.lista.Remove(robot);
 					megfigyeltindex.ModulusCsökkentése();
 
-                    if (robot.Elindult && !robot.Kész)
-                    {
-						robot.thread.Suspend();
-                    }
+
 				}
 				Robot.halállista.Clear();
 			}
@@ -228,13 +297,13 @@ namespace Karesz
 							Robot.halállista.Add(Robot.lista[j]);
 						}
 			}
-			void Start_or_Resume()
-			{
-				if (this.thread.ThreadState == ThreadState.Unstarted)
-					this.thread.Start();
-				else if (this.Vár)
-					this.thread.Resume();
-			}
+			//void Start_or_Resume()
+			//{
+			//	if (this.thread.ThreadState == ThreadState.Unstarted)
+			//		this.thread.Start();
+			//	else if (this.Vár)
+			//		this.thread.Resume();
+			//}
 			#endregion
 			#region Motorok
 			/// <summary>
@@ -399,8 +468,13 @@ namespace Karesz
 			public Bitmap Iránykép() => képkészlet[v.ToInt()];
 			void Cselekvés_vége()
 			{
-				if (!Kész && Elindult)
-					this.thread.Suspend();
+				// régi
+				//if (!Kész && Elindult)
+				//	this.thread.Suspend(); 
+				if (Végzett) return;
+
+				duda.Set();   // jelez a schedulernek: „kész a köröm”
+				jelzőlámpa.WaitOne();   // és várja a következő engedélyt
 			}
 
 			#endregion

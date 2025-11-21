@@ -17,8 +17,14 @@ namespace Karesz
 
         void TANÁR_ROBOTJAI()
         {
-            new Robot("Karesz", 1000, 1000, 1000, 1000, 0, 5, 28, 0);
+			new Robot("Karesz", 1000, 1000, 1000, 1000, 0, 5, 28, 0);
+            //Robot lilesz = new Robot("Lilesz", 1000, 1000, 1000, 1000, 0, 10, 22, 0);
 
+            //lilesz.Feladat = delegate()
+            //{
+            //    lilesz.Lépj();
+            //    lilesz.Lépj();
+            //};
         }
-    }
+	}
 }
