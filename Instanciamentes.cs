@@ -37,14 +37,16 @@ namespace Karesz
 			Robot.akit_kiválasztottak.UltrahangSzenzor();
 		(int,int,int) SzélesUltrahang() =>
 			Robot.akit_kiválasztottak.SzélesUltrahangSzenzor();
-		int Hőmérséklet() => 
+		int Hőmérséklet() =>
 			Robot.akit_kiválasztottak.Hőmérő();
+		void Mondd(string s) =>
+			Robot.akit_kiválasztottak.Mondd(s);
 
-        #endregion
+		#endregion
 
-        #region Pályára visszavezetett parancsok
+		#region Pályára visszavezetett parancsok
 
-        void Betölt(string path) => pálya.Betölt(path);
+		void Betölt(string path) => pálya.Betölt(path);
 
         #endregion
 	}

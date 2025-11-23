@@ -107,8 +107,8 @@ namespace Karesz
 
 			TANÁR_ROBOTJAI();
 			DIÁK_ROBOTJAI();
-			if (betöltendő_pálya != "")
-				Betölt(betöltendő_pálya);
+			//if (betöltendő_pálya != "")
+			//	Betölt(betöltendő_pálya);
 
 			form_teljesen_kész = true;
 			Robot.form = this;
