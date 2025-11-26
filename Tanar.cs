@@ -14,10 +14,10 @@ namespace Karesz
 	public partial class Form1 : Form
 	{
 		static Random r = new Random();
-		string betöltendő_pálya = "palya14.txt";
+		string betöltendő_pálya = "palya01.txt";
 		void TANÁR_ROBOTJAI()
 		{
-			Robot karesz = new Robot("Karesz", 0, 0, 0, 0, 0, 20, 15, 1, false, false);
+			Robot karesz = new Robot("Karesz", 0, 0, 0, 0, 0, 20, 15, 1, true, true);
 			Betölt(betöltendő_pálya);
 			Frissít();
 

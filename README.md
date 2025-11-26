@@ -1,8 +1,5 @@
-# Karesz vonalat követ
-Karesz kövesse (de ne szedje fel) a vonalat! Ha lemegy a vonalról, menjen vissza rá, amint csak lehet!
-És élje túl ezt a kalandot.
-
-A megírt algoritmusnak a 14-22. pályák mindegyikén működnie kell! Érdemes a palya14.txt -vel kezdeni és palya22.txt-ig egyenként menni, mert egyre nehezedik...
+# Karesz unatkozik
+Itt Karesz nem csinál semmi érdekeset. Azt csinálsz vele, amit akarsz.
 
 # K.A.R.E.SZ.
 A Középiskolai Algoritmusokra Rávezető Edukációs Szoftver (továbbiakban K.A.R.E.SZ.) 
