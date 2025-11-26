@@ -14,23 +14,18 @@ namespace Karesz
 	public partial class Form1 : Form
 	{
 
-		// IDE JÖNNEK AZ ELJÁRÁSOK ÉS FÜGGVÉNYEK
+		// EZ UTÁN JÖNNEK AZ ELJÁRÁSOK ÉS FÜGGVÉNYEK
 
+
+
+
+		//  EZ ELÉ JÖNNEK AZ ELJÁRÁSOK ÉS FÜGGVÉNYEK
 
 		void DIÁK_ROBOTJAI()
 		{
 			Robot.Get("Karesz").Feladat = delegate ()
 			{
 				// IDE ÍRD AZ UTASÍTÁSOKAT!
-
-				Lépj();
-				Fordulj(jobbra);
-				Lépj();
-				Lépj();
-				Fordulj(balra);
-				Lépj();
-				Fordulj(balra);
-				Fordulj(balra);
 
 			};
 		}
